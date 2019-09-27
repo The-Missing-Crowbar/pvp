@@ -1,7 +1,7 @@
 package io.github.officereso;
 
 
-import org.bukkit.plugin.java.JavaPlugin;
+        import org.bukkit.plugin.java.JavaPlugin;
 
 public class pvp extends JavaPlugin {
 
