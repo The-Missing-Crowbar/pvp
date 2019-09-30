@@ -16,13 +16,16 @@ import org.bukkit.potion.PotionEffectType;
 public final class pvp extends JavaPlugin implements Listener {
     private PotionEffect heal = new PotionEffect(PotionEffectType.HEAL,1,1);
     private PotionEffect damage = new PotionEffect(PotionEffectType.HARM,1,1);
-    private PotionEffect poison = new PotionEffect(PotionEffectType.POISON,22,1);
+    private PotionEffect poison = new PotionEffect(PotionEffectType.POISON,66,1);
     private PotionEffect speed = new PotionEffect(PotionEffectType.SPEED,90,2);
 
+    private ItemStack splashHeal = new ItemStack(Material.SPLASH_POTION);
+    private ItemStack splashDamage = new ItemStack(Material.SPLASH_POTION);
+    private ItemStack splashPoison = new ItemStack(Material.SPLASH_POTION);
+    private ItemStack potionSpeed = new ItemStack(Material.POTION);
+    private ItemStack lingerHeal = new ItemStack(Material.LINGERING_POTION);
+
     private ItemStack godapple = new ItemStack(Material.ENCHANTED_GOLDEN_APPLE);
-    private ItemStack splash = new ItemStack(Material.SPLASH_POTION);
-    private ItemStack potion = new ItemStack(Material.POTION);
-    private ItemStack linger = new ItemStack(Material.LINGERING_POTION);
     private ItemStack food = new ItemStack(Material.COOKED_BEEF, 64);
     private ItemStack swordMan1 = new ItemStack(Material.STONE_SWORD);
     private ItemStack axeMan1 = new ItemStack(Material.IRON_AXE);
@@ -38,8 +41,34 @@ public final class pvp extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        getLogger().info("onEnable is called!");
-        getServer().getPluginManager().registerEvents(this,this);
+        try {
+            PotionMeta potionMeta = (PotionMeta) potionSpeed.getItemMeta();
+            potionMeta.addCustomEffect(speed, true);
+            potionSpeed.setItemMeta(potionMeta);
+
+            PotionMeta splashHealMeta = (PotionMeta) splashHeal.getItemMeta();
+            splashHealMeta.addCustomEffect(heal, true);
+            splashHeal.setItemMeta(splashHealMeta);
+
+            PotionMeta lingerHealMeta = (PotionMeta) lingerHeal.getItemMeta();
+            lingerHealMeta.addCustomEffect(heal, true);
+            lingerHeal.setItemMeta(lingerHealMeta);
+
+            PotionMeta splashDamageMeta = (PotionMeta) splashDamage.getItemMeta();
+            splashDamageMeta.addCustomEffect(damage, true);
+            splashDamage.setItemMeta(splashDamageMeta);
+
+            PotionMeta splashPoisonMeta = (PotionMeta) splashPoison.getItemMeta();
+            splashPoisonMeta.addCustomEffect(poison, true);
+            splashPoison.setItemMeta(splashPoisonMeta);
+
+            ItemMeta seafarer1EnchantMeta = seafarer1.getItemMeta();
+            seafarer1EnchantMeta.addEnchant(Enchantment.LOYALTY, 1, true);
+            seafarer1.setItemMeta(seafarer1EnchantMeta);
+
+            getServer().getPluginManager().registerEvents(this, this);
+        }
+        catch(NullPointerException ignore){ }
     }
     @Override
     public void onDisable() {
@@ -49,7 +78,6 @@ public final class pvp extends JavaPlugin implements Listener {
     @EventHandler
     public void onSignClickKit(PlayerInteractEvent event){
         try {
-            System.out.println(event.getPlayer().getExp());
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp" )&& event.getClickedBlock().getX() == -133 && event.getClickedBlock().getZ() == -248 && event.getClickedBlock().getY() == 6) {
                 event.getPlayer().getInventory().clear();
                 event.getPlayer().getInventory().setArmorContents(null);
@@ -75,9 +103,6 @@ public final class pvp extends JavaPlugin implements Listener {
             else if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp" )&& event.getClickedBlock().getX() == -136 && event.getClickedBlock().getZ() == -248 && event.getClickedBlock().getY() == 6 && (event.getPlayer().getLevel() >= 6)) {
                 event.getPlayer().getInventory().clear();
                 event.getPlayer().getInventory().setArmorContents(null);
-                ItemMeta seafarer1EnchantMeta = seafarer1.getItemMeta();
-                seafarer1EnchantMeta.addEnchant(Enchantment.LOYALTY, 1, true);
-                seafarer1.setItemMeta(seafarer1EnchantMeta);
                 event.getPlayer().getInventory().addItem(seafarer1);
                 event.getPlayer().getInventory().addItem(food);
                 event.getPlayer().getInventory().setChestplate(new ItemStack((Material.IRON_CHESTPLATE)));
@@ -138,7 +163,7 @@ public final class pvp extends JavaPlugin implements Listener {
                 event.getPlayer().getInventory().clear();
                 event.getPlayer().getInventory().setArmorContents(null);
                 ItemMeta stick2EnchantMeta = stick2.getItemMeta();
-                stick2EnchantMeta.addEnchant(Enchantment.KNOCKBACK, 30, true);
+                stick2EnchantMeta.addEnchant(Enchantment.KNOCKBACK, 20, true);
                 stick2.setItemMeta(stick2EnchantMeta);
                 event.getPlayer().getInventory().addItem(stick2);
                 event.getPlayer().getInventory().addItem(food);
@@ -177,17 +202,10 @@ public final class pvp extends JavaPlugin implements Listener {
     public void onSignClickPotions(PlayerInteractEvent event){
         try {
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp") && event.getClickedBlock().getX() == -132 && event.getClickedBlock().getZ() == -250 && event.getClickedBlock().getY() == 6 && (event.getPlayer().getLevel() >= 3)) {
-                System.out.println("Ran");
-                PotionMeta splashMeta = (PotionMeta) splash.getItemMeta();
-                splashMeta.addCustomEffect(heal, true);
-                splash.setItemMeta(splashMeta);
-                PotionMeta lingerHealMeta = (PotionMeta) splash.getItemMeta();
-                lingerHealMeta.addCustomEffect(heal, true);
-                linger.setItemMeta(lingerHealMeta);
-                event.getPlayer().getInventory().addItem(splash);
-                event.getPlayer().getInventory().addItem(splash);
-                event.getPlayer().getInventory().addItem(splash);
-                event.getPlayer().getInventory().addItem(linger);
+                event.getPlayer().getInventory().addItem(splashHeal);
+                event.getPlayer().getInventory().addItem(splashHeal);
+                event.getPlayer().getInventory().addItem(splashHeal);
+                event.getPlayer().getInventory().addItem(lingerHeal);
                 event.getPlayer().setLevel(event.getPlayer().getLevel() - 3);
             }
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp") && event.getClickedBlock().getX() == -132 && event.getClickedBlock().getZ() == -249 && event.getClickedBlock().getY() == 6 && (event.getPlayer().getLevel() >= 3)) {
@@ -195,27 +213,18 @@ public final class pvp extends JavaPlugin implements Listener {
                 event.getPlayer().setLevel(event.getPlayer().getLevel() - 3);
             }
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp") && event.getClickedBlock().getX() == -132 && event.getClickedBlock().getZ() == -250 && event.getClickedBlock().getY() == 5 && (event.getPlayer().getLevel() >= 5)) {
-                PotionMeta splashMeta = (PotionMeta) splash.getItemMeta();
-                splashMeta.addCustomEffect(damage, true);
-                splash.setItemMeta(splashMeta);
-                event.getPlayer().getInventory().addItem(splash);
-                event.getPlayer().getInventory().addItem(splash);
-                event.getPlayer().getInventory().addItem(splash);
-                splashMeta = (PotionMeta) splash.getItemMeta();
-                splashMeta.addCustomEffect(poison, true);
-                splash.setItemMeta(splashMeta);
-                event.getPlayer().getInventory().addItem(splash);
-                event.getPlayer().getInventory().addItem(splash);
+                event.getPlayer().getInventory().addItem(splashDamage);
+                event.getPlayer().getInventory().addItem(splashDamage);
+                event.getPlayer().getInventory().addItem(splashDamage);
+                event.getPlayer().getInventory().addItem(splashPoison);
+                event.getPlayer().getInventory().addItem(splashPoison);
                 event.getPlayer().setLevel(event.getPlayer().getLevel() - 5);
             }
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp") && event.getClickedBlock().getX() == -132 && event.getClickedBlock().getZ() == -249 && event.getClickedBlock().getY() == 5 && (event.getPlayer().getLevel() >= 3)) {
-                PotionMeta potionMeta = (PotionMeta) potion.getItemMeta();
-                potionMeta.addCustomEffect(speed, true);
-                potion.setItemMeta(potionMeta);
-                event.getPlayer().getInventory().addItem(potion);
-                event.getPlayer().getInventory().addItem(potion);
-                event.getPlayer().getInventory().addItem(potion);
-                event.getPlayer().getInventory().addItem(potion);
+                event.getPlayer().getInventory().addItem(potionSpeed);
+                event.getPlayer().getInventory().addItem(potionSpeed);
+                event.getPlayer().getInventory().addItem(potionSpeed);
+                event.getPlayer().getInventory().addItem(potionSpeed);
                 event.getPlayer().setLevel(event.getPlayer().getLevel() - 3);
             }
         }

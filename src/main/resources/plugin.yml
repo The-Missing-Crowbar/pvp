@@ -1,3 +1,4 @@
 name: pvp
-version: 1.0
+version: "1.0"
 main: io.github.officereso.pvp
+api-version: "1.14"
