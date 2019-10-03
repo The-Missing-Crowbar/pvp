@@ -1,5 +1,6 @@
 package io.github.officereso;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
@@ -12,12 +13,14 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.util.Random;
+
 
 public final class pvp extends JavaPlugin implements Listener {
-    private PotionEffect heal = new PotionEffect(PotionEffectType.HEAL,1,1);
-    private PotionEffect damage = new PotionEffect(PotionEffectType.HARM,1,1);
-    private PotionEffect poison = new PotionEffect(PotionEffectType.POISON,66,1);
-    private PotionEffect speed = new PotionEffect(PotionEffectType.SPEED,90,2);
+    private PotionEffect heal = new PotionEffect(PotionEffectType.HEAL, 1, 1);
+    private PotionEffect damage = new PotionEffect(PotionEffectType.HARM, 1, 1);
+    private PotionEffect poison = new PotionEffect(PotionEffectType.POISON, 66, 1);
+    private PotionEffect speed = new PotionEffect(PotionEffectType.SPEED, 90, 2);
 
     private ItemStack splashHeal = new ItemStack(Material.SPLASH_POTION);
     private ItemStack splashDamage = new ItemStack(Material.SPLASH_POTION);
@@ -67,12 +70,29 @@ public final class pvp extends JavaPlugin implements Listener {
             seafarer1.setItemMeta(seafarer1EnchantMeta);
 
             getServer().getPluginManager().registerEvents(this, this);
+        } catch (NullPointerException ignore) {
         }
-        catch(NullPointerException ignore){ }
     }
+
     @Override
     public void onDisable() {
         getLogger().info("onDisable is called!");
+    }
+
+    private Location[] ww1Spawns() {
+        Location[] spawns = {new Location(getServer().getWorld("pvp"), -792, 4, -103),
+                new Location(getServer().getWorld("pvp"), -768, 2, -94),
+                new Location(getServer().getWorld("pvp"), -747, 4, -102),
+                new Location(getServer().getWorld("pvp"), -760, 2, -113),
+                new Location(getServer().getWorld("pvp"), -776, 2, -94),
+                new Location(getServer().getWorld("pvp"), -774, 4, -131),
+                new Location(getServer().getWorld("pvp"), -765, 2, -147),
+                new Location(getServer().getWorld("pvp"), -759, 4, -146),
+                new Location(getServer().getWorld("pvp"), -750, 2, -138),
+                new Location(getServer().getWorld("pvp"), -773, 2, -132),
+                new Location(getServer().getWorld("pvp"), -795, 2, -125),
+                new Location(getServer().getWorld("pvp"), -764, 39, -130)};
+        return spawns;
     }
 
     @EventHandler
@@ -229,5 +249,15 @@ public final class pvp extends JavaPlugin implements Listener {
             }
         }
         catch(NullPointerException ignore){ }
+    }
+
+    @EventHandler
+    public void onSignBattle(PlayerInteractEvent event){
+        //try{
+            if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp") && event.getClickedBlock().getX() == -135 && event.getClickedBlock().getZ() == -248 && event.getClickedBlock().getY() == 4){
+                event.getPlayer().teleport(ww1Spawns()[new Random().nextInt(ww1Spawns().length)]);
+            }
+        //}
+        // catch (NullPointerException ignore) { }
     }
 }
