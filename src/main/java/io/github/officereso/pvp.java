@@ -5,6 +5,8 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -253,11 +255,23 @@ public final class pvp extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onSignBattle(PlayerInteractEvent event){
-        //try{
+        try{
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp") && event.getClickedBlock().getX() == -135 && event.getClickedBlock().getZ() == -248 && event.getClickedBlock().getY() == 4){
                 event.getPlayer().teleport(ww1Spawns()[new Random().nextInt(ww1Spawns().length)]);
             }
-        //}
-        // catch (NullPointerException ignore) { }
+        }
+         catch (NullPointerException ignore) { }
+    }
+    @EventHandler
+    public void onKill(PlayerDeathEvent event){
+        try {
+            if (event.getEntity().getWorld() == getServer().getWorld("pvp")) {
+                int level = event.getEntity().getLevel();
+                event.getEntity().getKiller().setLevel(event.getEntity().getKiller().getLevel() + 2);
+                event.getEntity().getInventory().clear();
+                event.getEntity().setLevel(level);
+            }
+        }
+        catch(NullPointerException ignore){ }
     }
 }
