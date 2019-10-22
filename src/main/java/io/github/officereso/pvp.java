@@ -5,7 +5,6 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -99,7 +98,7 @@ public final class pvp extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onSignClickKit(PlayerInteractEvent event){
-        try {
+        if(event.getClickedBlock()!=null){
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp" )&& event.getClickedBlock().getX() == -133 && event.getClickedBlock().getZ() == -248 && event.getClickedBlock().getY() == 6) {
                 event.getPlayer().getInventory().clear();
                 event.getPlayer().getInventory().setArmorContents(null);
@@ -193,13 +192,12 @@ public final class pvp extends JavaPlugin implements Listener {
                 event.getPlayer().setLevel(event.getPlayer().getLevel()-13);
             }
         }
-        catch(NullPointerException ignored){ }
 
     }
 
     @EventHandler
     public void onSignClickWeapons(PlayerInteractEvent event){
-        try {
+        if(event.getClickedBlock()!=null){
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp") && event.getClickedBlock().getX() == -138 && event.getClickedBlock().getZ() == -249 && event.getClickedBlock().getY() == 6 && (event.getPlayer().getLevel() >= 5)) {
                 event.getPlayer().getInventory().addItem(swordMan2);
                 event.getPlayer().setLevel(event.getPlayer().getLevel() - 5);
@@ -217,12 +215,11 @@ public final class pvp extends JavaPlugin implements Listener {
                 event.getPlayer().setLevel(event.getPlayer().getLevel() - 7);
             }
         }
-        catch(NullPointerException ignore){ }
     }
 
     @EventHandler
     public void onSignClickPotions(PlayerInteractEvent event){
-        try {
+        if(event.getClickedBlock()!=null){
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp") && event.getClickedBlock().getX() == -132 && event.getClickedBlock().getZ() == -250 && event.getClickedBlock().getY() == 6 && (event.getPlayer().getLevel() >= 3)) {
                 event.getPlayer().getInventory().addItem(splashHeal);
                 event.getPlayer().getInventory().addItem(splashHeal);
@@ -250,21 +247,19 @@ public final class pvp extends JavaPlugin implements Listener {
                 event.getPlayer().setLevel(event.getPlayer().getLevel() - 3);
             }
         }
-        catch(NullPointerException ignore){ }
     }
 
     @EventHandler
     public void onSignBattle(PlayerInteractEvent event){
-        try{
+        if(event.getClickedBlock()!=null){
             if (event.getClickedBlock().getWorld() == getServer().getWorld("pvp") && event.getClickedBlock().getX() == -135 && event.getClickedBlock().getZ() == -248 && event.getClickedBlock().getY() == 4){
                 event.getPlayer().teleport(ww1Spawns()[new Random().nextInt(ww1Spawns().length)]);
             }
         }
-         catch (NullPointerException ignore) { }
     }
     @EventHandler
     public void onKill(PlayerDeathEvent event){
-        try {
+        if(event.getEntity().getKiller()!=null){
             if (event.getEntity().getWorld() == getServer().getWorld("pvp")) {
                 int level = event.getEntity().getLevel();
                 event.getEntity().getKiller().setLevel(event.getEntity().getKiller().getLevel() + 2);
@@ -272,6 +267,5 @@ public final class pvp extends JavaPlugin implements Listener {
                 event.getEntity().setLevel(level);
             }
         }
-        catch(NullPointerException ignore){ }
     }
 }
