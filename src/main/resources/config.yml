@@ -12,7 +12,15 @@ maps:
 kits:
   example_kit_name:
     name: "Kit Name"
-    items: "DIAMOND_SWORD 1, DIAMOND_SHOVEL 1"
+    items:
+      1:
+        material: "DIAMOND_SWORD"
+        ammount: 1
+        enchantments: "SHARPNESS 1, SWEEPING_EDGE 2"
+      2:
+        material: "DIAMOND_SHOVEL"
+        ammount: 1
+        enchantments:
     cost: 2
     position: 0
 
