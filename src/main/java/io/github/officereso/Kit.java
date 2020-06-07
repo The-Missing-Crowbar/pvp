@@ -43,6 +43,7 @@ public class Kit extends JavaPlugin {
      * @param viewPosition Where the kit will show up in the kit selection inventory.
      *                     Must be between 0 and 26.
      */
+    @Deprecated
     public Kit(String name, String items, int cost, int viewPosition){
         this.name = name;
         List<String[]> list = new ArrayList<String[]>();
@@ -53,6 +54,9 @@ public class Kit extends JavaPlugin {
 
             for (String[] item : list){
                 itemStackList.add(new ItemStack(Material.getMaterial(item[0]), Integer.parseInt(item[1])));
+                if (!(item[2].equals("NONE"))){ // If the enchantment is not set to none
+
+                }
             }
 
             this.cost = cost;
@@ -62,6 +66,14 @@ public class Kit extends JavaPlugin {
             getLogger().severe("Malformed config for kit "+name+". \n" +
                     "Items should be ITEM_NAME #ammount, ITEM_NAME #ammount");
         }
+    }
+
+    public Kit(String name, int cost, int viewPosition, String... args){
+        this.name = name;
+        this.cost = cost;
+        this.viewPosition = viewPosition;
+
+
     }
 
     public void addKitToInventory(@NotNull PlayerInventory playerInventory){
