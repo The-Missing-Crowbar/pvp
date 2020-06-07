@@ -33,12 +33,15 @@ public class Kit extends JavaPlugin {
     }
 
     /**
+     * This constructor takes a string and parses it into
+     * a list of ItemStacks.
+     *
      * @param name Kit name
-     * @param items List of itemStacks that will be in the kit.
+     * @param items String from config formated like
+     *              "DIAMOND_SWORD 1, DIAMOND_SHOVEL 1"
      * @param cost The amount in XP that the kit object costs.
      * @param viewPosition Where the kit will show up in the kit selection inventory.
      *                     Must be between 0 and 26.
-     *
      */
     public Kit(String name, String items, int cost, int viewPosition){
         this.name = name;
