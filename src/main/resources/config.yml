@@ -1,0 +1,19 @@
+maps:
+  example_map:
+    spawns: "100 20 400, 200 30 400..."
+    name: "Example"
+  example_map2:
+    spawns: "100 20 400, 200 30 400..."
+    name: "Example"
+  example_map3:
+    spawns: "100 20 400, 200 30 400..."
+    name: "Example"
+
+kits:
+  example_kit_name:
+    name: "Kit Name"
+    items: "DIAMOND_SWORD 1, DIAMOND_SHOVEL 1"
+    cost: 2
+    position: 0
+
+sign_pos: "0 0 0"
