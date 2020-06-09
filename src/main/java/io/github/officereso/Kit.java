@@ -18,6 +18,7 @@ public class Kit {
     private String lore;
     private Type type;
 
+
     /**
      * @param name              Kit name
      * @param inventoryItemList List of itemStacks that will be in the kit.
@@ -36,7 +37,11 @@ public class Kit {
 
     public enum Type {
         KIT,
-        POTION
+        POTION,
+        HELMET,
+        CHESTPLATE,
+        LEGGINGS,
+        BOOTS
     }
 
     public String getName() {
