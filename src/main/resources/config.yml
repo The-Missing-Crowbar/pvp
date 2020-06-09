@@ -1,27 +1,60 @@
-maps:
-  example_map:
-    spawns: "100 20 400, 200 30 400..."
-    name: "Example"
-  example_map2:
-    spawns: "100 20 400, 200 30 400..."
-    name: "Example"
-  example_map3:
-    spawns: "100 20 400, 200 30 400..."
-    name: "Example"
-
-kits:
-  example_kit_name:
-    name: "Kit Name"
-    items:
-      1:
-        material: "DIAMOND_SWORD"
-        ammount: 1
-        enchantments: "SHARPNESS 1, SWEEPING_EDGE 2"
-      2:
-        material: "DIAMOND_SHOVEL"
-        ammount: 1
-        enchantments:
-    cost: 2
-    position: 0
-
-sign_pos: "0 0 0"
+#giveSteak: true
+#sign_pos: "0 0 0"
+#
+#maps:
+#  example_map:
+#    spawns: "100 20 400, 200 30 400..."
+#    name: "Example"
+#  example_map2:
+#    spawns: "100 20 400, 200 30 400..."
+#    name: "Example"
+#  example_map3:
+#    spawns: "100 20 400, 200 30 400..."
+#    name: "Example"
+#
+#potions:
+#  health:
+#    name: "3 Health Potions"
+#    items:
+#      1:
+#        material: "SPLASH_POTION"
+#        amount: 1
+#        basePotionData: "INSTANT_HEAL"
+#        extended: false
+#        upgraded: true
+#        inventoryPos:
+#      2:
+#        material: "SPLASH_POTION"
+#        amount: 1
+#        basePotionData: "INSTANT_HEAL"
+#        extended: false
+#        upgraded: true
+#        inventoryPos:
+#      3:
+#        material: "SPLASH_POTION"
+#        amount: 1
+#        basePotionData: "INSTANT_HEAL"
+#        extended: false
+#        upgraded: true
+#        inventoryPos:
+#    cost: 3
+#    position: 16
+#    lore:
+#
+#kits:
+#  example_kit_name:
+#    name: "Kit Name"
+#    items:
+#      1:
+#        material: "BOW"
+#        amount: 1
+#        enchantments: "INFINITY 1"
+#        inventoryPos:
+#      2:
+#        material: "ARROW"
+#        amount: 1
+#        enchantment:
+#        inventoryPos: 17
+#    cost: 2
+#    position: 0
+#    lore:
