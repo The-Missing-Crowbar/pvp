@@ -17,11 +17,10 @@ import java.util.Set;
 
 public class pvp extends JavaPlugin implements Listener {
     private final FileConfiguration config = this.getConfig();
+    HashMap<String, Kit> kits = configToKit();
 
     @Override
     public void onEnable() {
-        HashMap<String, Kit> kits = configToKit();
-
         this.saveDefaultConfig();
     }
 
@@ -39,45 +38,50 @@ public class pvp extends JavaPlugin implements Listener {
             String name = config.getString("kits."+kit+".name");
             Integer cost = (Integer) config.get("kits."+kit+".cost");
             Integer position = (Integer) config.get("kits."+kit+".position");
-            Integer inventoryPos = (Integer) config.get("kits."+kit+".inventoryPos");
+            String lore = config.getString("kits."+kit+".lore");
 
             if (name == null){
-                getLogger().severe("Kit " + name + " has invalid name");
+                getLogger().severe("Kit " + kit + " has invalid name");
                 return null;
             } // Checks for bad names.
             if (cost == null){
-                getLogger().severe("Kit " + name + " has invalid cost");
+                getLogger().severe("Kit " + kit + " has invalid cost");
                 return null;
             } // Checks for bad cost.
             if (position == null){
-                getLogger().severe("Kit " + name + " has invalid position");
+                getLogger().severe("Kit " + kit + " has invalid position");
                 return null;
             } // Checks for bad position.
 
-            List<ItemStack> itemStackList = new ArrayList<ItemStack>();
-            for (String item : config.getConfigurationSection("kits."+kit+".items").getKeys(false)){
+            List<InventoryItem> inventoryItemList = new ArrayList<InventoryItem>();
+            for (String item : config.getConfigurationSection("kits."+kit+".items").getKeys(false)) {
+                Integer inventoryPos = (Integer) config.get("kits." + kit + ".items." + item + ".inventoryPos");
+
                 ItemStack itemStack = new ItemStack(
-                        Material.valueOf(config.getString("kits."+kit+".items."+item+".material")), // Material located in config
-                        (config.getInt("kits."+kit+".items."+item+".amount"))); // Amount of the item
+                        Material.valueOf(config.getString("kits." + kit + ".items." + item + ".material")), // Material located in config
+                        (config.getInt("kits." + kit + ".items." + item + ".amount"))); // Amount of the item
 
-                String enchantments = config.getString("kits."+kit+".items."+item+".enchantments");
-                if (enchantments == null){
-                    itemStackList.add(itemStack);
-                } // If no enchantments create add itemStack to itemStackList
+                String enchantments = config.getString("kits." + kit + ".items." + item + ".enchantments");
+                if (enchantments == null) {
+                    inventoryItemList.add(new InventoryItem(itemStack, inventoryPos));
+                } // If no enchantments create add itemStack to inventoryItemList
+                else {
+                    List<String[]> list = new ArrayList<String[]>();
+                    for (String enchantment : enchantments.split(", ")) {
+                        list.add(enchantment.split(" "));
+                    }
 
-                List<String[]> list = new ArrayList<String[]>();
-                for (String enchantment : enchantments.split(", ")) {
-                    list.add(enchantment.split(" "));
-                }
-
-                ItemMeta itemMeta = itemStack.getItemMeta();
-                for (String[] enchantmentData : list){
-                    itemMeta.addEnchant(Enchantment.getByKey(NamespacedKey.minecraft(enchantmentData[0].toLowerCase())), Integer.parseInt(enchantmentData[1]), true);
+                    ItemMeta itemMeta = itemStack.getItemMeta();
+                    for (String[] enchantmentData : list) {
+                        itemMeta.addEnchant(Enchantment.getByKey(NamespacedKey.minecraft(enchantmentData[0].toLowerCase())), Integer.parseInt(enchantmentData[1]), true);
+                    }
+                    inventoryItemList.add(new InventoryItem(itemStack, inventoryPos));
                 }
             }
-            Kit kitClass = new Kit(name, itemStackList, cost, position, inventoryPos);
-            kits.put(name, kitClass);
+            Kit kitClass = new Kit(name, inventoryItemList, cost, position, lore);
+            kits.put(kit, kitClass);
         }
+
         return kits;
     }
 }
