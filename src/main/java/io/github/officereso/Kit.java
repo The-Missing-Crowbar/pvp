@@ -16,21 +16,27 @@ public class Kit {
     private int cost;
     private int viewPosition;
     private String lore;
-
+    private Type type;
 
     /**
-     * @param name Kit name
+     * @param name              Kit name
      * @param inventoryItemList List of itemStacks that will be in the kit.
-     * @param cost The amount in XP that the kit object costs.
-     * @param viewPosition Where the kit will show up in the kit selection inventory.
-     *                     Must be between 0 and 26.
-     *
+     * @param cost              The amount in XP that the kit object costs.
+     * @param viewPosition      Where the kit will show up in the kit selection inventory.
+     *                          Must be between 0 and 26.
      */
-    public Kit(String name, List<InventoryItem> inventoryItemList, int cost, int viewPosition, String lore) {
+    public Kit(String name, List<InventoryItem> inventoryItemList, int cost, int viewPosition, String lore, Type type) {
         this.name = name;
         this.inventoryItemList = inventoryItemList;
         this.cost = cost;
         this.viewPosition = viewPosition;
+        this.lore = lore;
+        this.type = type;
+    }
+
+    public enum Type {
+        KIT,
+        POTION
     }
 
     public String getName() {

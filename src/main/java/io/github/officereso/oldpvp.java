@@ -21,7 +21,7 @@ public final class oldpvp extends JavaPlugin implements Listener {
     private final PotionEffect heal = new PotionEffect(PotionEffectType.HEAL, 1, 1);
     private final PotionEffect damage = new PotionEffect(PotionEffectType.HARM, 1, 1);
 
-    private final ItemStack splashHeal = new ItemStack(Material.SPLASH_POTION);
+    private final ItemStack splashHeal = new ItemStack(Material.SPLASH_POTION, 1);
     private final ItemStack splashDamage = new ItemStack(Material.SPLASH_POTION);
     private final ItemStack splashPoison = new ItemStack(Material.SPLASH_POTION);
     private final ItemStack splashSpeed = new ItemStack(Material.SPLASH_POTION);
