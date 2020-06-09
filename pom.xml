@@ -7,6 +7,18 @@
     <groupId>io.github.officereso</groupId>
     <artifactId>pvp</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <repositories>
         <repository>
             <id>spigotmc-repo</id>
@@ -25,6 +37,12 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>16.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.ipvp</groupId>
+            <artifactId>canvas</artifactId>
+            <version>1.5.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

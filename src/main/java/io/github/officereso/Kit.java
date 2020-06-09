@@ -59,4 +59,12 @@ public class Kit {
     public int getViewPosition() {
         return viewPosition;
     }
+
+    public String getLore() {
+        return lore;
+    }
+
+    public Type getType() {
+        return type;
+    }
 }
