@@ -41,7 +41,8 @@ public class Kit {
         HELMET,
         CHESTPLATE,
         LEGGINGS,
-        BOOTS
+        BOOTS,
+        ADDITIONAL
     }
 
     public String getName() {

@@ -6,9 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="canvas" />
         <module name="pvp" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="canvas" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
