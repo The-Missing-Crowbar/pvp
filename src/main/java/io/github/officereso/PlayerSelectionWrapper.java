@@ -6,6 +6,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PlayerSelectionWrapper {
     public final Player player;
@@ -14,8 +15,8 @@ public class PlayerSelectionWrapper {
     public Kit selectedChestplate;
     public Kit selectedLeggings;
     public Kit selectedBoots;
-    public HashMap<Kit, Integer> selectedPotions;
-    public HashMap<Kit, Integer> selectedAdditions;
+    public HashMap<Kit, Integer> selectedPotions = new HashMap<>();
+    public HashMap<Kit, Integer> selectedAdditions = new HashMap<>();
 
     public PlayerSelectionWrapper(Player player, Kit kit) {
         this.player = player;
@@ -49,10 +50,33 @@ public class PlayerSelectionWrapper {
     public HashMap<Integer, Integer> getGreenSlots() {
         HashMap<Integer, Integer> slots = new HashMap<>();
         if (selectedKit != null) {
-            slots.put(selectedKit.getViewPosition(), selectedKit.getViewPosition());
+            slots.put(selectedKit.getViewPosition(), 1);
         }
         if (selectedHelmet != null) {
-            slots.put(selectedHelmet.getViewPosition(), selectedHelmet.getViewPosition());
+            slots.put(selectedHelmet.getViewPosition(), 1);
+        }
+        if (selectedChestplate != null) {
+            slots.put(selectedChestplate.getViewPosition(), 1);
+        }
+        if (selectedLeggings != null) {
+            slots.put(selectedLeggings.getViewPosition(), 1);
+        }
+        if (selectedBoots != null) {
+            slots.put(selectedBoots.getViewPosition(), 1);
+        }
+        if (selectedPotions != null) {
+            for (Map.Entry<Kit, Integer> entryKit : selectedPotions.entrySet()) {
+                if (entryKit.getValue() == null)
+                    continue;
+                slots.put(entryKit.getKey().getViewPosition(), entryKit.getValue());
+            }
+        }
+        if (selectedAdditions != null) {
+            for (Map.Entry<Kit, Integer> entryKit : selectedAdditions.entrySet()) {
+                if (entryKit.getValue() == null)
+                    continue;
+                slots.put(entryKit.getKey().getViewPosition(), entryKit.getValue());
+            }
         }
 
         return slots;
@@ -63,6 +87,11 @@ public class PlayerSelectionWrapper {
     }
 
     public void addAdditions(Kit kit, int amount) {
+        selectedAdditions.putIfAbsent(kit, 0);
+        if (selectedAdditions.get(kit) + amount <= 0) {
+            selectedAdditions.put(kit, null);
+            return;
+        }
         selectedAdditions.put(kit, selectedAdditions.get(kit) + amount);
     }
 
@@ -83,6 +112,11 @@ public class PlayerSelectionWrapper {
     }
 
     public void addPotions(Kit kit, int amount) {
+        selectedPotions.putIfAbsent(kit, 0);
+        if (selectedPotions.get(kit) + amount <= 0) {
+            selectedPotions.put(kit, null);
+            return;
+        }
         selectedPotions.put(kit, selectedPotions.get(kit) + amount);
     }
 

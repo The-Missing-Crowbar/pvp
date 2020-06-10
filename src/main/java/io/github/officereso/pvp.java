@@ -10,6 +10,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -80,24 +81,78 @@ public class pvp extends JavaPlugin implements Listener {
 
     public void slotFunction(Slot slot, Kit kit, PlayerSelectionWrapper selectionWrapper, Menu menu) {
         slot.setClickHandler((player, info) -> {
-            if (kit.getType() == Kit.Type.KIT) {
-                if (selectionWrapper.getSelectedKit() != kit) {
-                    for (Map.Entry<Integer, Kit> entryKit : kits.entrySet()) {
-                        Kit updateKit = entryKit.getValue();
-                        int slotPos = entryKit.getKey();
-                        Slot updateSlot = menu.getSlot(slotPos);
-                        selectionWrapper.setSelectedKit(kit);
-                        if (selectionWrapper.getGreenSlots().get(slotPos) != null) {
-                            updateSlot.setItem(new ItemStack(Material.GREEN_WOOL));
-                        } else {
-                            updateSlot.setItem(updateKit.getInventoryItemList().get(0).getItemStack());
-                        }
-                    }
+            Kit.Type type = kit.getType();
+            if (type == Kit.Type.KIT) {
+                if (info.getClickType() == ClickType.LEFT) {
+                    selectionWrapper.setSelectedKit(kit);
+                    updateMenu(selectionWrapper, menu);
+                } else if (info.getClickType() == ClickType.RIGHT) {
+                    selectionWrapper.setSelectedKit(null);
+                    updateMenu(selectionWrapper, menu);
+                }
+            } else if (type == Kit.Type.HELMET) {
+                if (info.getClickType() == ClickType.LEFT) {
+                    selectionWrapper.setSelectedHelmet(kit);
+                    updateMenu(selectionWrapper, menu);
+                } else if (info.getClickType() == ClickType.RIGHT) {
+                    selectionWrapper.setSelectedHelmet(null);
+                    updateMenu(selectionWrapper, menu);
+                }
+            } else if (type == Kit.Type.CHESTPLATE) {
+                if (info.getClickType() == ClickType.LEFT) {
+                    selectionWrapper.setSelectedChestplate(kit);
+                    updateMenu(selectionWrapper, menu);
+                } else if (info.getClickType() == ClickType.RIGHT) {
+                    selectionWrapper.setSelectedChestplate(null);
+                    updateMenu(selectionWrapper, menu);
+                }
+            } else if (type == Kit.Type.LEGGINGS) {
+                if (info.getClickType() == ClickType.LEFT) {
+                    selectionWrapper.setSelectedLeggings(kit);
+                    updateMenu(selectionWrapper, menu);
+                } else if (info.getClickType() == ClickType.RIGHT) {
+                    selectionWrapper.setSelectedLeggings(null);
+                    updateMenu(selectionWrapper, menu);
+                }
+            } else if (type == Kit.Type.BOOTS) {
+                if (info.getClickType() == ClickType.LEFT) {
+                    selectionWrapper.setSelectedBoots(kit);
+                    updateMenu(selectionWrapper, menu);
+                } else if (info.getClickType() == ClickType.RIGHT) {
+                    selectionWrapper.setSelectedBoots(null);
+                    updateMenu(selectionWrapper, menu);
+                }
+            } else if (type == Kit.Type.POTION) {
+                if (info.getClickType() == ClickType.LEFT) {
+                    selectionWrapper.addPotions(kit, 1);
+                    updateMenu(selectionWrapper, menu);
+                } else if (info.getClickType() == ClickType.RIGHT) {
+                    selectionWrapper.addPotions(kit, -1);
+                    updateMenu(selectionWrapper, menu);
+                }
+            } else if (type == Kit.Type.ADDITIONAL) {
+                if (info.getClickType() == ClickType.LEFT) {
+                    selectionWrapper.addAdditions(kit, 1);
+                    updateMenu(selectionWrapper, menu);
+                } else if (info.getClickType() == ClickType.RIGHT) {
+                    selectionWrapper.addAdditions(kit, -1);
+                    updateMenu(selectionWrapper, menu);
                 }
             }
-            if (kit.getType() == Kit.Type.HELMET)
-                System.out.println("ldkfsjld");
         });
+    }
+
+    private void updateMenu(PlayerSelectionWrapper selectionWrapper, Menu menu) {
+        for (Map.Entry<Integer, Kit> entryKit : kits.entrySet()) {
+            Kit updateKit = entryKit.getValue();
+            int slotPos = entryKit.getKey();
+            Slot updateSlot = menu.getSlot(slotPos);
+            if (selectionWrapper.getGreenSlots().get(slotPos) != null) {
+                updateSlot.setItem(new ItemStack(Material.GREEN_WOOL, selectionWrapper.getGreenSlots().get(slotPos)));
+            } else {
+                updateSlot.setItem(updateKit.getInventoryItemList().get(0).getItemStack());
+            }
+        }
     }
 
     public void load() {
