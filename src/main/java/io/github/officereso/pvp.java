@@ -95,7 +95,8 @@ public class pvp extends JavaPlugin implements Listener {
                     }
                 }
             }
-            System.out.println("ldkfsjld");
+            if (kit.getType() == Kit.Type.HELMET)
+                System.out.println("ldkfsjld");
         });
     }
 
