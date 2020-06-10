@@ -7,6 +7,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -29,45 +30,80 @@ import java.util.Map;
 public class pvp extends JavaPlugin implements Listener {
     private final FileConfiguration config = this.getConfig();
     private HashMap<Integer, Kit> kits = configToKit();
-    private Menu signMenu = ChestMenu.builder(6).title("PVP Selection Menu").build();
+    private HashMap<Player, Menu> signMenus = new HashMap<>();
+    private HashMap<Player, PlayerSelectionWrapper> selectedKits = new HashMap<>();
     Block signBlock;
 
 
     @Override
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(new MenuFunctionListener(), this);
-
-        for (Map.Entry<Integer, Kit> entryKit : kits.entrySet()) {
-            Kit kit = entryKit.getValue();
-            int value = entryKit.getKey();
-            Slot slot = signMenu.getSlot(value);
-            slot.setItem(kit.getInventoryItemList().get(0).getItemStack());
-
-            slot.setClickHandler((player, info) -> {
-
-            });
-        }
-        World world = Bukkit.getWorld("world");
-
-        String[] signPos = config.getString("sign_pos").split(" ");
-        signBlock = world.getBlockAt(Integer.parseInt(signPos[0]), Integer.parseInt(signPos[1]), Integer.parseInt(signPos[2]));
+        load();
         this.saveDefaultConfig();
         getServer().getPluginManager().registerEvents(this, this);
-    }
-
-    @EventHandler
-    public void onClick(PlayerInteractEvent event) {
-        if (event.getClickedBlock() == null) {
-            return;
-        }
-        if (event.getClickedBlock().equals(signBlock)) {
-            signMenu.open(event.getPlayer());
-        }
     }
 
     @Override
     public void onDisable() {
         getLogger().info("onDisable is called!");
+    }
+
+    @EventHandler
+    public void onClick(PlayerInteractEvent event) {
+
+        Menu menu;
+        Player player = event.getPlayer();
+        if (signMenus.get(player) == null) {
+            signMenus.put(player, ChestMenu.builder(6).title("PVP Selection Menu").build());
+            menu = signMenus.get(player);
+
+            PlayerSelectionWrapper selectionWrapper;
+            if (selectedKits.get(player) == null) {                      // Gets the selectionWrapper
+                selectionWrapper = new PlayerSelectionWrapper(player);  // for the current player.
+                selectedKits.put(player, selectionWrapper);             // Makes one if doesnt exist.
+            } else {
+                selectionWrapper = selectedKits.get(player);
+            }
+
+            for (Map.Entry<Integer, Kit> entryKit : kits.entrySet()) {
+                Kit kit = entryKit.getValue();
+                int slotPos = entryKit.getKey();
+                Slot slot = menu.getSlot(slotPos);
+                slot.setItem(kit.getInventoryItemList().get(0).getItemStack());
+                slotFunction(slot, kit, selectionWrapper, menu);
+            }
+        } else {
+            menu = signMenus.get(player);
+        }
+        menu.open(player);
+    }
+
+    public void slotFunction(Slot slot, Kit kit, PlayerSelectionWrapper selectionWrapper, Menu menu) {
+        slot.setClickHandler((player, info) -> {
+            if (kit.getType() == Kit.Type.KIT) {
+                if (selectionWrapper.getSelectedKit() != kit) {
+                    for (Map.Entry<Integer, Kit> entryKit : kits.entrySet()) {
+                        Kit updateKit = entryKit.getValue();
+                        int slotPos = entryKit.getKey();
+                        Slot updateSlot = menu.getSlot(slotPos);
+                        selectionWrapper.setSelectedKit(kit);
+                        if (selectionWrapper.getGreenSlots().get(slotPos) != null) {
+                            updateSlot.setItem(new ItemStack(Material.GREEN_WOOL));
+                        } else {
+                            updateSlot.setItem(updateKit.getInventoryItemList().get(0).getItemStack());
+                        }
+                    }
+                }
+            }
+            System.out.println("ldkfsjld");
+        });
+    }
+
+    public void load() {
+        World world = Bukkit.getWorld("world");
+        String[] signPos = config.getString("sign_pos").split(" ");
+        signBlock = world.getBlockAt(Integer.parseInt(signPos[0]), Integer.parseInt(signPos[1]), Integer.parseInt(signPos[2]));
+        configToKit();
     }
 
     private HashMap<Integer, Kit> configToKit() {
@@ -125,8 +161,9 @@ public class pvp extends JavaPlugin implements Listener {
                     Kit kitClass;
                     if (root.equals("kits.")) {
                         kitClass = new Kit(name, inventoryItemList, cost, position, lore, Kit.Type.KIT);
+                    } else {
+                        kitClass = new Kit(name, inventoryItemList, cost, position, lore, Kit.Type.ADDITIONAL);
                     }
-                    kitClass = new Kit(name, inventoryItemList, cost, position, lore, Kit.Type.ADDITIONAL);
                     kits.put(kitClass.getViewPosition(), kitClass);
                 }
                 if (root.equals("potions.")) {
