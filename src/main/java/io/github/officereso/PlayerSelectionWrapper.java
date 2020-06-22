@@ -47,39 +47,85 @@ public class PlayerSelectionWrapper {
         return selectedPotions;
     }
 
-    public HashMap<Integer, Integer> getGreenSlots() {
+    public HashMap<Integer, Integer> getSelectedSlots() {
         HashMap<Integer, Integer> slots = new HashMap<>();
-        if (selectedKit != null) {
+        if (selectedKit != null)
             slots.put(selectedKit.getViewPosition(), 1);
-        }
-        if (selectedHelmet != null) {
+        if (selectedHelmet != null)
             slots.put(selectedHelmet.getViewPosition(), 1);
-        }
-        if (selectedChestplate != null) {
+        if (selectedChestplate != null)
             slots.put(selectedChestplate.getViewPosition(), 1);
-        }
-        if (selectedLeggings != null) {
+        if (selectedLeggings != null)
             slots.put(selectedLeggings.getViewPosition(), 1);
-        }
-        if (selectedBoots != null) {
+        if (selectedBoots != null)
             slots.put(selectedBoots.getViewPosition(), 1);
+        for (Map.Entry<Kit, Integer> entryKit : selectedPotions.entrySet()) {
+            if (entryKit.getValue() == null)
+                continue;
+            slots.put(entryKit.getKey().getViewPosition(), entryKit.getValue());
         }
-        if (selectedPotions != null) {
-            for (Map.Entry<Kit, Integer> entryKit : selectedPotions.entrySet()) {
-                if (entryKit.getValue() == null)
-                    continue;
-                slots.put(entryKit.getKey().getViewPosition(), entryKit.getValue());
-            }
-        }
-        if (selectedAdditions != null) {
-            for (Map.Entry<Kit, Integer> entryKit : selectedAdditions.entrySet()) {
-                if (entryKit.getValue() == null)
-                    continue;
-                slots.put(entryKit.getKey().getViewPosition(), entryKit.getValue());
-            }
+        for (Map.Entry<Kit, Integer> entryKit : selectedAdditions.entrySet()) {
+            if (entryKit.getValue() == null)
+                continue;
+            slots.put(entryKit.getKey().getViewPosition(), entryKit.getValue());
         }
 
         return slots;
+    }
+
+    public void fillInventory() {
+        player.getInventory().clear();
+        HashMap<Kit, Integer> allKits = new HashMap<>();
+        allKits.put(selectedKit, 1);
+        allKits.put(selectedHelmet, 1);
+        allKits.put(selectedChestplate, 1);
+        allKits.put(selectedLeggings, 1);
+        allKits.put(selectedBoots, 1);
+        for (Map.Entry<Kit, Integer> entryKit : selectedPotions.entrySet()) {
+            allKits.put(entryKit.getKey(), entryKit.getValue());
+        }
+        for (Map.Entry<Kit, Integer> entryKit : selectedAdditions.entrySet()) {
+            allKits.put(entryKit.getKey(), entryKit.getValue());
+        }
+
+        for (Map.Entry<Kit, Integer> entryKit : allKits.entrySet()) {
+            if (entryKit.getKey() == null) {
+                continue;
+            }
+            for (InventoryItem item : entryKit.getKey().getInventoryItemList()) {
+                if (entryKit.getKey().getType() == Kit.Type.HELMET) {
+                    player.getInventory().setHelmet(item.getItemStack());
+                    continue;
+                }
+                if (entryKit.getKey().getType() == Kit.Type.CHESTPLATE) {
+                    player.getInventory().setChestplate(item.getItemStack());
+                    continue;
+                }
+                if (entryKit.getKey().getType() == Kit.Type.LEGGINGS) {
+                    player.getInventory().setLeggings(item.getItemStack());
+                    continue;
+                }
+                if (entryKit.getKey().getType() == Kit.Type.BOOTS) {
+                    player.getInventory().setBoots(item.getItemStack());
+                    continue;
+                }
+                if (item.getInvPosition() == null) {
+                    player.getInventory().addItem(item.getItemStack());
+                    continue;
+                }
+                player.getInventory().setItem(item.getInvPosition(), item.getItemStack());
+            }
+        }
+    }
+
+    public void clean() {
+        selectedKit = null;
+        selectedHelmet = null;
+        selectedChestplate = null;
+        selectedLeggings = null;
+        selectedBoots = null;
+        selectedPotions = new HashMap<>();
+        selectedAdditions = new HashMap<>();
     }
 
     public void setSelectedAdditions(HashMap<Kit, Integer> selectedAdditions) {
@@ -89,7 +135,7 @@ public class PlayerSelectionWrapper {
     public void addAdditions(Kit kit, int amount) {
         selectedAdditions.putIfAbsent(kit, 0);
         if (selectedAdditions.get(kit) + amount <= 0) {
-            selectedAdditions.put(kit, null);
+            selectedAdditions.remove(kit);
             return;
         }
         selectedAdditions.put(kit, selectedAdditions.get(kit) + amount);
@@ -114,7 +160,7 @@ public class PlayerSelectionWrapper {
     public void addPotions(Kit kit, int amount) {
         selectedPotions.putIfAbsent(kit, 0);
         if (selectedPotions.get(kit) + amount <= 0) {
-            selectedPotions.put(kit, null);
+            selectedPotions.remove(kit);
             return;
         }
         selectedPotions.put(kit, selectedPotions.get(kit) + amount);
@@ -126,5 +172,26 @@ public class PlayerSelectionWrapper {
 
     public void setSelectedKit(Kit selectedKit) {
         this.selectedKit = selectedKit;
+    }
+
+    public int getTotalXpCost() {
+        int cost = 0;
+        if (selectedKit != null)
+            cost += selectedKit.getCost();
+        if (selectedHelmet != null)
+            cost += selectedHelmet.getCost();
+        if (selectedChestplate != null)
+            cost += selectedChestplate.getCost();
+        if (selectedLeggings != null)
+            cost += selectedLeggings.getCost();
+        if (selectedBoots != null)
+            cost += selectedBoots.getCost();
+        for (Map.Entry<Kit, Integer> entryKit : selectedPotions.entrySet()) {
+            cost += entryKit.getKey().getCost() * entryKit.getValue();
+        }
+        for (Map.Entry<Kit, Integer> entryKit : selectedAdditions.entrySet()) {
+            cost += entryKit.getKey().getCost() * entryKit.getValue();
+        }
+        return cost;
     }
 }

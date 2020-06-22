@@ -1,5 +1,6 @@
 package io.github.officereso;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -12,11 +13,11 @@ import java.util.List;
 
 public class Kit {
     private final String name;
-    private List<InventoryItem> inventoryItemList;
+    private final List<InventoryItem> inventoryItemList;
     private int cost;
-    private int viewPosition;
-    private String lore;
-    private Type type;
+    private final int viewPosition;
+    private final List<String> lore;
+    private final Type type;
 
 
     /**
@@ -26,12 +27,20 @@ public class Kit {
      * @param viewPosition      Where the kit will show up in the kit selection inventory.
      *                          Must be between 0 and 26.
      */
-    public Kit(String name, List<InventoryItem> inventoryItemList, int cost, int viewPosition, String lore, Type type) {
-        this.name = name;
+    public Kit(String name, List<InventoryItem> inventoryItemList, int cost, int viewPosition, List<String> lore, Type type) {
+        this.name = ChatColor.translateAlternateColorCodes('&', name);
         this.inventoryItemList = inventoryItemList;
         this.cost = cost;
         this.viewPosition = viewPosition;
-        this.lore = lore;
+        List<String> _lore = new ArrayList<>();
+        if (lore == null) {
+            this.lore = null;
+        } else {
+            for (String item : lore) {
+                _lore.add(ChatColor.translateAlternateColorCodes('&', item));
+            }
+            this.lore = _lore;
+        }
         this.type = type;
     }
 
@@ -61,7 +70,7 @@ public class Kit {
         return viewPosition;
     }
 
-    public String getLore() {
+    public List<String> getLore() {
         return lore;
     }
 

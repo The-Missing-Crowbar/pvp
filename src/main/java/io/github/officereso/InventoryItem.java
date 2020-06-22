@@ -1,6 +1,7 @@
 package io.github.officereso;
 
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
 
 public class InventoryItem {
     public ItemStack itemStack;
@@ -15,6 +16,7 @@ public class InventoryItem {
         return itemStack;
     }
 
+    @Nullable
     public Integer getInvPosition() {
         return invPosition;
     }

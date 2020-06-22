@@ -1,15 +1,14 @@
 package io.github.officereso;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -30,11 +29,14 @@ import java.util.Map;
 
 public class pvp extends JavaPlugin implements Listener {
     private final FileConfiguration config = this.getConfig();
-    private HashMap<Integer, Kit> kits = configToKit();
+    private HashMap<Integer, Kit> kits;
+    private HashMap<Integer, Kit> defaultKits = new HashMap<>();
     private HashMap<Player, Menu> signMenus = new HashMap<>();
     private HashMap<Player, PlayerSelectionWrapper> selectedKits = new HashMap<>();
-    Block signBlock;
-
+    private List<io.github.officereso.Map> maps;
+    private io.github.officereso.Map enabledMap;
+    Location signBlock;
+    private boolean giveSteak;
 
     @Override
     public void onEnable() {
@@ -51,93 +53,182 @@ public class pvp extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onClick(PlayerInteractEvent event) {
-
-        Menu menu;
-        Player player = event.getPlayer();
-        if (signMenus.get(player) == null) {
-            signMenus.put(player, ChestMenu.builder(6).title("PVP Selection Menu").build());
-            menu = signMenus.get(player);
-
-            PlayerSelectionWrapper selectionWrapper;
-            if (selectedKits.get(player) == null) {                      // Gets the selectionWrapper
-                selectionWrapper = new PlayerSelectionWrapper(player);  // for the current player.
-                selectedKits.put(player, selectionWrapper);             // Makes one if doesnt exist.
-            } else {
-                selectionWrapper = selectedKits.get(player);
-            }
-
-            for (Map.Entry<Integer, Kit> entryKit : kits.entrySet()) {
-                Kit kit = entryKit.getValue();
-                int slotPos = entryKit.getKey();
-                Slot slot = menu.getSlot(slotPos);
-                slot.setItem(kit.getInventoryItemList().get(0).getItemStack());
-                slotFunction(slot, kit, selectionWrapper, menu);
-            }
-        } else {
-            menu = signMenus.get(player);
+        if (event.getClickedBlock() == null) {
+            return;
         }
-        menu.open(player);
+        if (event.getClickedBlock().getLocation().equals(signBlock)) {
+            Menu menu;
+            Player player = event.getPlayer();
+            if (signMenus.get(player) == null) {
+                signMenus.put(player, ChestMenu.builder(6).title("PVP Selection Menu").build());
+                menu = signMenus.get(player);
+
+                PlayerSelectionWrapper selectionWrapper;
+                if (selectedKits.get(player) == null) {                     // Gets the selectionWrapper
+                    selectionWrapper = new PlayerSelectionWrapper(player);  // for the current player.
+                    selectedKits.put(player, selectionWrapper);             // Makes one if doesnt exist.
+                } else {
+                    selectionWrapper = selectedKits.get(player);
+                }
+
+                for (Map.Entry<Integer, Kit> entryKit : kits.entrySet()) {
+                    Kit kit = entryKit.getValue();
+                    int slotPos = entryKit.getKey();
+                    Slot slot = menu.getSlot(slotPos);
+                    ItemStack itemStack = kit.getInventoryItemList().get(0).getItemStack();
+                    ItemMeta itemMeta = itemStack.getItemMeta();
+                    itemMeta.setDisplayName(kit.getName());
+                    itemMeta.setLore(kit.getLore());
+                    itemStack.setItemMeta(itemMeta);
+                    slot.setItem(kit.getInventoryItemList().get(0).getItemStack());
+                    slotFunction(slot, kit, selectionWrapper, menu);
+                }
+                Slot slot = menu.getSlot(53);
+                ItemStack itemStack = new ItemStack(Material.COMPARATOR);
+                ItemMeta itemMeta = itemStack.getItemMeta();
+                itemMeta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&2Go!"));
+                itemStack.setItemMeta(itemMeta);
+                slot.setItem(itemStack);
+                slot.setClickHandler((ignore, info) -> {
+                    selectionWrapper.fillInventory();
+                    if (giveSteak) {
+                        player.getInventory().addItem(new ItemStack(Material.COOKED_BEEF, 64));
+                    }
+                    for (Map.Entry<Integer, Kit> entryKit : defaultKits.entrySet()) {
+                        for (InventoryItem item : entryKit.getValue().getInventoryItemList()) {
+                            switch (entryKit.getValue().getType()) {
+                                case HELMET:
+                                    player.getInventory().setHelmet(item.getItemStack());
+                                    continue;
+
+                                case CHESTPLATE:
+                                    player.getInventory().setChestplate(item.getItemStack());
+                                    continue;
+
+                                case LEGGINGS:
+                                    player.getInventory().setLeggings(item.getItemStack());
+                                    continue;
+
+                                case BOOTS:
+                                    player.getInventory().setBoots(item.getItemStack());
+                                    continue;
+                            }
+                            if (item.getInvPosition() == null) {
+                                player.getInventory().addItem(item.itemStack);
+                                continue;
+                            }
+                            player.getInventory().setItem(item.getInvPosition(), item.getItemStack());
+                        }
+                    }
+                    player.setLevel(player.getLevel() - selectionWrapper.getTotalXpCost());
+                    selectionWrapper.clean();
+                    player.teleport(enabledMap.getSpawnLocation());
+                });
+            } else {
+                menu = signMenus.get(player);
+            }
+            menu.open(player);
+        }
     }
 
     public void slotFunction(Slot slot, Kit kit, PlayerSelectionWrapper selectionWrapper, Menu menu) {
         slot.setClickHandler((player, info) -> {
             Kit.Type type = kit.getType();
-            if (type == Kit.Type.KIT) {
-                if (info.getClickType() == ClickType.LEFT) {
-                    selectionWrapper.setSelectedKit(kit);
-                    updateMenu(selectionWrapper, menu);
-                } else if (info.getClickType() == ClickType.RIGHT) {
-                    selectionWrapper.setSelectedKit(null);
-                    updateMenu(selectionWrapper, menu);
-                }
-            } else if (type == Kit.Type.HELMET) {
-                if (info.getClickType() == ClickType.LEFT) {
-                    selectionWrapper.setSelectedHelmet(kit);
-                    updateMenu(selectionWrapper, menu);
-                } else if (info.getClickType() == ClickType.RIGHT) {
-                    selectionWrapper.setSelectedHelmet(null);
-                    updateMenu(selectionWrapper, menu);
-                }
-            } else if (type == Kit.Type.CHESTPLATE) {
-                if (info.getClickType() == ClickType.LEFT) {
-                    selectionWrapper.setSelectedChestplate(kit);
-                    updateMenu(selectionWrapper, menu);
-                } else if (info.getClickType() == ClickType.RIGHT) {
-                    selectionWrapper.setSelectedChestplate(null);
-                    updateMenu(selectionWrapper, menu);
-                }
-            } else if (type == Kit.Type.LEGGINGS) {
-                if (info.getClickType() == ClickType.LEFT) {
-                    selectionWrapper.setSelectedLeggings(kit);
-                    updateMenu(selectionWrapper, menu);
-                } else if (info.getClickType() == ClickType.RIGHT) {
-                    selectionWrapper.setSelectedLeggings(null);
-                    updateMenu(selectionWrapper, menu);
-                }
-            } else if (type == Kit.Type.BOOTS) {
-                if (info.getClickType() == ClickType.LEFT) {
-                    selectionWrapper.setSelectedBoots(kit);
-                    updateMenu(selectionWrapper, menu);
-                } else if (info.getClickType() == ClickType.RIGHT) {
-                    selectionWrapper.setSelectedBoots(null);
-                    updateMenu(selectionWrapper, menu);
-                }
-            } else if (type == Kit.Type.POTION) {
-                if (info.getClickType() == ClickType.LEFT) {
-                    selectionWrapper.addPotions(kit, 1);
-                    updateMenu(selectionWrapper, menu);
-                } else if (info.getClickType() == ClickType.RIGHT) {
-                    selectionWrapper.addPotions(kit, -1);
-                    updateMenu(selectionWrapper, menu);
-                }
-            } else if (type == Kit.Type.ADDITIONAL) {
-                if (info.getClickType() == ClickType.LEFT) {
-                    selectionWrapper.addAdditions(kit, 1);
-                    updateMenu(selectionWrapper, menu);
-                } else if (info.getClickType() == ClickType.RIGHT) {
-                    selectionWrapper.addAdditions(kit, -1);
-                    updateMenu(selectionWrapper, menu);
-                }
+            int playerLevel = player.getLevel();
+            switch (type) {
+
+                case KIT:
+                    switch (info.getClickType()) {
+                        case LEFT:
+                            if (playerLevel >= (kit.getCost() + selectionWrapper.getTotalXpCost())) {
+                                selectionWrapper.setSelectedKit(kit);
+                                updateMenu(selectionWrapper, menu);
+                            } else player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
+                            break;
+                        case RIGHT:
+                            selectionWrapper.setSelectedKit(null);
+                            updateMenu(selectionWrapper, menu);
+                            break;
+                    }
+                case HELMET:
+                    switch (info.getClickType()) {
+                        case LEFT:
+                            if (playerLevel >= (kit.getCost() + selectionWrapper.getTotalXpCost())) {
+                                selectionWrapper.setSelectedHelmet(kit);
+                                updateMenu(selectionWrapper, menu);
+                            } else player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
+                            break;
+                        case RIGHT:
+                            selectionWrapper.setSelectedHelmet(null);
+                            updateMenu(selectionWrapper, menu);
+                            break;
+                    }
+                case CHESTPLATE:
+                    switch (info.getClickType()) {
+                        case LEFT:
+                            if (playerLevel >= (kit.getCost() + selectionWrapper.getTotalXpCost())) {
+                                selectionWrapper.setSelectedChestplate(kit);
+                                updateMenu(selectionWrapper, menu);
+                            } else player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
+                            break;
+                        case RIGHT:
+                            selectionWrapper.setSelectedChestplate(null);
+                            updateMenu(selectionWrapper, menu);
+                            break;
+                    }
+                case LEGGINGS:
+                    switch (info.getClickType()) {
+                        case LEFT:
+                            if (playerLevel >= (kit.getCost() + selectionWrapper.getTotalXpCost())) {
+                                selectionWrapper.setSelectedLeggings(kit);
+                                updateMenu(selectionWrapper, menu);
+                            } else player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
+                            break;
+                        case RIGHT:
+                            selectionWrapper.setSelectedLeggings(null);
+                            updateMenu(selectionWrapper, menu);
+                            break;
+                    }
+                case BOOTS:
+                    switch (info.getClickType()) {
+                        case LEFT:
+                            if (playerLevel >= (kit.getCost() + selectionWrapper.getTotalXpCost())) {
+                                selectionWrapper.setSelectedBoots(kit);
+                                updateMenu(selectionWrapper, menu);
+                            } else player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
+                            break;
+                        case RIGHT:
+                            selectionWrapper.setSelectedBoots(null);
+                            updateMenu(selectionWrapper, menu);
+                            break;
+                    }
+                case POTION:
+                    switch (info.getClickType()) {
+                        case LEFT:
+                            if (playerLevel >= (kit.getCost() + selectionWrapper.getTotalXpCost())) {
+                                selectionWrapper.addPotions(kit, 1);
+                                updateMenu(selectionWrapper, menu);
+                            } else player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
+                            break;
+                        case RIGHT:
+                            selectionWrapper.addPotions(kit, -1);
+                            updateMenu(selectionWrapper, menu);
+                            break;
+                    }
+                case ADDITIONAL:
+                    switch (info.getClickType()) {
+                        case LEFT:
+                            if (playerLevel >= (kit.getCost() + selectionWrapper.getTotalXpCost())) {
+                                selectionWrapper.addAdditions(kit, 1);
+                                updateMenu(selectionWrapper, menu);
+                            } else player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1f, 1f);
+                            break;
+                        case RIGHT:
+                            selectionWrapper.addAdditions(kit, -1);
+                            updateMenu(selectionWrapper, menu);
+
+                            break;
+                    }
             }
         });
     }
@@ -147,8 +238,8 @@ public class pvp extends JavaPlugin implements Listener {
             Kit updateKit = entryKit.getValue();
             int slotPos = entryKit.getKey();
             Slot updateSlot = menu.getSlot(slotPos);
-            if (selectionWrapper.getGreenSlots().get(slotPos) != null) {
-                updateSlot.setItem(new ItemStack(Material.GREEN_WOOL, selectionWrapper.getGreenSlots().get(slotPos)));
+            if (selectionWrapper.getSelectedSlots().get(slotPos) != null) {
+                updateSlot.setItem(new ItemStack(Material.GREEN_WOOL, selectionWrapper.getSelectedSlots().get(slotPos)));
             } else {
                 updateSlot.setItem(updateKit.getInventoryItemList().get(0).getItemStack());
             }
@@ -156,10 +247,21 @@ public class pvp extends JavaPlugin implements Listener {
     }
 
     public void load() {
-        World world = Bukkit.getWorld("world");
         String[] signPos = config.getString("sign_pos").split(" ");
-        signBlock = world.getBlockAt(Integer.parseInt(signPos[0]), Integer.parseInt(signPos[1]), Integer.parseInt(signPos[2]));
-        configToKit();
+        World world = Bukkit.getWorld(signPos[0]);
+        signBlock = new Location(world, Integer.parseInt(signPos[1]), Integer.parseInt(signPos[2]), Integer.parseInt(signPos[3]));
+        kits = configToKit();
+        maps = configToMaps();
+        enabledMap = maps.get(0); // TODO: 6/21/2020
+        giveSteak = config.getBoolean("giveSteak");
+    }
+
+    private List<io.github.officereso.Map> configToMaps() {
+        List<io.github.officereso.Map> maps = new ArrayList<>();
+        for (String map : config.getConfigurationSection("maps").getKeys(false)) {
+            maps.add(new io.github.officereso.Map((List<String>) config.getList("maps." + map + ".spawns"), config.getString("maps." + map + ".name")));
+        }
+        return maps;
     }
 
     private HashMap<Integer, Kit> configToKit() {
@@ -174,7 +276,7 @@ public class pvp extends JavaPlugin implements Listener {
                 String name = config.getString(root + kit + ".name");
                 Integer cost = (Integer) config.get(root + kit + ".cost");
                 Integer position = (Integer) config.get(root + kit + ".position");
-                String lore = config.getString(root + kit + ".lore");
+                List<String> lore = (List<String>) config.getList(root + kit + ".lore");
 
                 if (name == null) {
                     getLogger().severe(root + ' ' + kit + " has invalid name");
@@ -268,10 +370,27 @@ public class pvp extends JavaPlugin implements Listener {
                         inventoryItemList.add(new InventoryItem(itemStack, inventoryPos));
                     }
                     Kit kitClass = new Kit(name, inventoryItemList, cost, position, lore, Kit.Type.valueOf(type));
+                    if (kit.equals("default")) {
+                        defaultKits.put(kitClass.getViewPosition(), kitClass);
+                        continue;
+                    }
                     kits.put(kitClass.getViewPosition(), kitClass);
                 }
             }
         }
         return kits;
+    }
+
+    @EventHandler
+    public void onKill(PlayerDeathEvent event) {
+        if (event.getEntity().getKiller() != null) {
+            if (event.getEntity().getWorld() == getServer().getWorld("spawn")) {
+                int level = event.getEntity().getLevel();
+                event.getEntity().getKiller().setLevel(event.getEntity().getKiller().getLevel() + 2);
+                event.getEntity().getInventory().clear();
+                event.getEntity().setLevel(level);
+                signMenus.remove(event.getEntity());
+            }
+        }
     }
 }
